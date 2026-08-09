@@ -8,7 +8,10 @@ MCP server para Garmin Connect en TypeScript. 61 tools para acceso a datos de fi
 
 ```
 src/
-  index.ts              Entry point: MCP server + stdio transport
+  index.ts              Entry point: elige transporte (stdio | http) segun MCP_TRANSPORT
+  server.ts             Factoria del McpServer: registra todas las tools
+  http.ts               Transporte Streamable HTTP (Railway): /mcp, /health, Bearer auth
+  setup.ts              CLI interactivo de autenticacion (MFA)
   client/
     garmin-auth.ts       Autenticacion SSO + OAuth1/OAuth2 (basado en python-garminconnect)
     garmin.client.ts     Cliente con metodos para cada endpoint
@@ -142,5 +145,6 @@ Flujo basado en `python-garminconnect` (cyberjunky) via `garth`:
 - Imports de librerias externas con su path completo (`@modelcontextprotocol/sdk/server/mcp.js`)
 - `console.error()` para logging (nunca `console.log` en servidores stdio)
 - Autenticacion via env vars `GARMIN_EMAIL` y `GARMIN_PASSWORD`
-- Tokens cacheados en `~/.garmin-mcp/`
+- Tokens cacheados en `GARMIN_TOKEN_DIR` (default `~/.garmin-mcp/`), sembrables via `GARMIN_OAUTH1_TOKEN`/`GARMIN_OAUTH2_TOKEN`
 - Retry automatico con re-auth si un request falla con 401
+- Despliegue remoto: `MCP_TRANSPORT=http` + `PORT` + `MCP_AUTH_TOKEN` (ver RAILWAY.md y Dockerfile)

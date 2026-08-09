@@ -86,6 +86,29 @@ GARMIN_EMAIL=you@email.com GARMIN_PASSWORD=yourpass npx -y @nicolasvegam/garmin-
 
 The server communicates over stdio using the [Model Context Protocol](https://modelcontextprotocol.io/).
 
+## Deploy on Railway (remote HTTP server)
+
+The server can also run as a remote MCP server over Streamable HTTP, ready for [Railway](https://railway.com). Set `MCP_TRANSPORT=http` (the included `Dockerfile` already does) and the server listens on `PORT`, exposing:
+
+- `POST /mcp` — MCP Streamable HTTP endpoint (protected with `Authorization: Bearer <MCP_AUTH_TOKEN>` when `MCP_AUTH_TOKEN` is set)
+- `GET /health` — healthcheck
+
+Environment variables:
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `GARMIN_EMAIL` | Yes | Garmin Connect account email |
+| `GARMIN_PASSWORD` | Yes | Garmin Connect account password |
+| `MCP_AUTH_TOKEN` | Recommended | Bearer token protecting `/mcp` |
+| `MCP_TRANSPORT` | No | `http` or `stdio` (default `stdio`; the Dockerfile sets `http`) |
+| `PORT` | No | HTTP port (default `3000`; Railway injects it) |
+| `GARMIN_TOKEN_DIR` | No | Directory for cached OAuth tokens (default `~/.garmin-mcp`) |
+| `GARMIN_OAUTH1_TOKEN` | No | JSON contents of `oauth1_token.json` to seed auth (needed for MFA accounts) |
+| `GARMIN_OAUTH2_TOKEN` | No | JSON contents of `oauth2_token.json` to seed auth |
+| `GARMIN_MFA_CODE` | No | One-shot MFA code for the first non-interactive login |
+
+See [RAILWAY.md](./RAILWAY.md) for the full step-by-step deployment guide (in Spanish).
+
 ## Available Tools
 
 ### Activities (12 tools)

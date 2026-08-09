@@ -28,7 +28,7 @@ const TICKET_REGEX = /ticket=([^"]+)"/;
 const TITLE_REGEX = /<title>(.+?)<\/title>/;
 const SSO_VERIFY_MFA = 'https://sso.garmin.com/sso/verifyMFA/loginEnterMfaCode';
 
-const TOKEN_DIR = path.join(os.homedir(), '.garmin-mcp');
+const TOKEN_DIR = process.env.GARMIN_TOKEN_DIR ?? path.join(os.homedir(), '.garmin-mcp');
 const OAUTH1_TOKEN_FILE = 'oauth1_token.json';
 const OAUTH2_TOKEN_FILE = 'oauth2_token.json';
 const PROFILE_FILE = 'profile.json';
@@ -66,6 +66,15 @@ export type RequestOptions = {
   body?: unknown;
   headers?: Record<string, string>;
 };
+
+function parseTokenEnv<T>(name: string, value: string): T | null {
+  try {
+    return JSON.parse(value) as T;
+  } catch {
+    console.error(`Warning: ${name} is not valid JSON — ignoring it`);
+    return null;
+  }
+}
 
 export class GarminAuth {
   private email: string;
@@ -424,6 +433,13 @@ export class GarminAuth {
       this.oauth1Token = null;
       this.oauth2Token = null;
       this.profile = null;
+    }
+
+    if (!this.oauth1Token && process.env.GARMIN_OAUTH1_TOKEN) {
+      this.oauth1Token = parseTokenEnv<OAuth1Token>('GARMIN_OAUTH1_TOKEN', process.env.GARMIN_OAUTH1_TOKEN);
+    }
+    if (!this.oauth2Token && process.env.GARMIN_OAUTH2_TOKEN) {
+      this.oauth2Token = parseTokenEnv<OAuth2Token>('GARMIN_OAUTH2_TOKEN', process.env.GARMIN_OAUTH2_TOKEN);
     }
   }
 

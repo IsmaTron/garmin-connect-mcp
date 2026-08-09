@@ -32,6 +32,9 @@ async function main(): Promise<void> {
     console.error(`Logged in as: ${auth.displayName}`);
     console.error('Tokens saved to ~/.garmin-mcp/');
     console.error('\nYou can now restart Claude Desktop — the MCP server will use the saved tokens.');
+    console.error('\nTo deploy on a server (e.g. Railway), copy the file contents into environment variables:');
+    console.error('  GARMIN_OAUTH1_TOKEN = contents of ~/.garmin-mcp/oauth1_token.json');
+    console.error('  GARMIN_OAUTH2_TOKEN = contents of ~/.garmin-mcp/oauth2_token.json');
   } catch (error) {
     console.error('\nAuthentication failed:', error instanceof Error ? error.message : error);
     process.exit(1);
