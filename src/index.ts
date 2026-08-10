@@ -3,28 +3,28 @@ import { GarminClient } from './client';
 import { createGarminServer } from './server';
 import { startHttpServer } from './http';
 
-const GARMIN_EMAIL = process.env.GARMIN_EMAIL;
-const GARMIN_PASSWORD = process.env.GARMIN_PASSWORD;
-const GARMIN_MFA_CODE = process.env.GARMIN_MFA_CODE;
-const MCP_TRANSPORT = process.env.MCP_TRANSPORT ?? 'stdio';
-const PORT = Number.parseInt(process.env.PORT ?? '', 10) || 3000;
+async function runServer(): Promise<void> {
+  const email = process.env.GARMIN_EMAIL;
+  const password = process.env.GARMIN_PASSWORD;
+  const mfaCode = process.env.GARMIN_MFA_CODE;
+  const transportMode = process.env.MCP_TRANSPORT ?? 'stdio';
+  const port = Number.parseInt(process.env.PORT ?? '', 10) || 3000;
 
-if (!GARMIN_EMAIL || !GARMIN_PASSWORD) {
-  console.error(
-    'Error: GARMIN_EMAIL and GARMIN_PASSWORD environment variables are required.\n' +
-      'Local (stdio):\n' +
-      '  claude mcp add garmin -e GARMIN_EMAIL=you@email.com -e GARMIN_PASSWORD=yourpass -- npx -y @nicolasvegam/garmin-connect-mcp\n' +
-      'Railway (HTTP): set them in your service under Variables (see RAILWAY.md)',
-  );
-  process.exit(1);
-}
+  if (!email || !password) {
+    console.error(
+      'Error: GARMIN_EMAIL and GARMIN_PASSWORD environment variables are required.\n' +
+        'Local (stdio):\n' +
+        '  claude mcp add garmin -e GARMIN_EMAIL=you@email.com -e GARMIN_PASSWORD=yourpass -- npx -y @nicolasvegam/garmin-connect-mcp\n' +
+        'Railway (HTTP): set them in your service under Variables (see RAILWAY.md)',
+    );
+    process.exit(1);
+  }
 
-const promptMfa = GARMIN_MFA_CODE ? async () => GARMIN_MFA_CODE : undefined;
-const client = new GarminClient(GARMIN_EMAIL, GARMIN_PASSWORD, promptMfa);
+  const promptMfa = mfaCode ? async () => mfaCode : undefined;
+  const client = new GarminClient(email, password, promptMfa);
 
-async function main(): Promise<void> {
-  if (MCP_TRANSPORT === 'http') {
-    startHttpServer(client, PORT);
+  if (transportMode === 'http') {
+    startHttpServer(client, port);
     return;
   }
 
@@ -32,6 +32,14 @@ async function main(): Promise<void> {
   const transport = new StdioServerTransport();
   await server.connect(transport);
   console.error('Garmin Connect MCP server running on stdio');
+}
+
+async function main(): Promise<void> {
+  if (process.argv[2] === 'setup') {
+    await import('./setup');
+    return;
+  }
+  await runServer();
 }
 
 main().catch((error) => {

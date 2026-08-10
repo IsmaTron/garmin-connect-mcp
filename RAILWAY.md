@@ -39,19 +39,23 @@ En tu servicio: pestaña **Variables** → **New Variable** (o usa **Raw Editor*
 
 En Railway no hay terminal interactivo para introducir el código MFA, así que genera los tokens en tu máquina y pégalos como variables:
 
-1. En tu ordenador ejecuta:
+1. En tu ordenador, clona este repositorio y ejecuta el setup interactivo:
    ```bash
-   GARMIN_EMAIL='tu-email@ejemplo.com' GARMIN_PASSWORD='tu-password' npx -y @nicolasvegam/garmin-connect-mcp setup
+   git clone https://github.com/IsmaTron/garmin-connect-mcp.git
+   cd garmin-connect-mcp
+   npm install
+   npm run build
+   GARMIN_EMAIL='tu-email@ejemplo.com' GARMIN_PASSWORD='tu-password' npm run setup
    ```
 2. Introduce el código MFA cuando lo pida. Los tokens se guardan en `~/.garmin-mcp/`.
-3. Copia el contenido de cada fichero en su variable:
+3. Copia el contenido de cada fichero en su variable (por ejemplo con `cat ~/.garmin-mcp/oauth1_token.json`):
 
 | Variable | Valor |
 |----------|-------|
 | `GARMIN_OAUTH1_TOKEN` | Contenido completo de `~/.garmin-mcp/oauth1_token.json` |
 | `GARMIN_OAUTH2_TOKEN` | Contenido completo de `~/.garmin-mcp/oauth2_token.json` |
 
-El token OAuth1 dura aproximadamente un año; el OAuth2 se renueva solo a partir del OAuth1.
+El token OAuth1 dura aproximadamente un año; el OAuth2 se renueva solo a partir del OAuth1. Los tokens sembrados por variable tienen prioridad sobre los ficheros cacheados en `GARMIN_TOKEN_DIR`, así que actualizar estas variables siempre surte efecto, incluso con un volumen montado.
 
 ### Opcionales
 
@@ -110,7 +114,7 @@ claude mcp add --transport http garmin https://TU-DOMINIO.up.railway.app/mcp --h
 | El deploy falla en healthcheck | El servidor no arrancó | Mira **Deploy Logs**: si falta `GARMIN_EMAIL`/`GARMIN_PASSWORD` el proceso sale con error al arrancar |
 | `401 Unauthorized` al llamar a `/mcp` | Falta o no coincide el Bearer token | Revisa que la cabecera `Authorization: Bearer ...` coincida exactamente con `MCP_AUTH_TOKEN` |
 | Error `MFA is required but no MFA handler is available` en los logs | Cuenta con MFA sin tokens sembrados | Sigue la sección de MFA del Paso 2 |
-| Las herramientas fallan tras semanas funcionando | Tokens caducados | Vuelve a ejecutar el setup local y actualiza `GARMIN_OAUTH1_TOKEN`/`GARMIN_OAUTH2_TOKEN`, o añade un volumen (Paso 4) |
+| Las herramientas fallan tras semanas funcionando | Tokens caducados | Vuelve a ejecutar el setup local y actualiza `GARMIN_OAUTH1_TOKEN`/`GARMIN_OAUTH2_TOKEN` (las variables tienen prioridad sobre los ficheros del volumen) |
 | Quiero rotar el token del endpoint | — | Cambia `MCP_AUTH_TOKEN` en Railway y actualiza la cabecera en tus clientes |
 
 ## Verificación rápida del protocolo

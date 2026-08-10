@@ -28,7 +28,7 @@ const TICKET_REGEX = /ticket=([^"]+)"/;
 const TITLE_REGEX = /<title>(.+?)<\/title>/;
 const SSO_VERIFY_MFA = 'https://sso.garmin.com/sso/verifyMFA/loginEnterMfaCode';
 
-const TOKEN_DIR = process.env.GARMIN_TOKEN_DIR ?? path.join(os.homedir(), '.garmin-mcp');
+const TOKEN_DIR = process.env.GARMIN_TOKEN_DIR?.trim() || path.join(os.homedir(), '.garmin-mcp');
 const OAUTH1_TOKEN_FILE = 'oauth1_token.json';
 const OAUTH2_TOKEN_FILE = 'oauth2_token.json';
 const PROFILE_FILE = 'profile.json';
@@ -287,7 +287,7 @@ export class GarminAuth {
     if (title.includes('MFA')) {
       if (!this.promptMfa) {
         throw new Error(
-          'MFA is required but no MFA handler is available. Run "npx @nicolasvegam/garmin-connect-mcp setup" to authenticate interactively.',
+          'MFA is required but no MFA handler is available. Run "npm run setup" to authenticate interactively, or for headless deployments seed GARMIN_OAUTH1_TOKEN and GARMIN_OAUTH2_TOKEN (or set GARMIN_MFA_CODE) — see RAILWAY.md.',
         );
       }
 
@@ -415,31 +415,29 @@ export class GarminAuth {
   }
 
   private loadTokens(): void {
+    if (process.env.GARMIN_OAUTH1_TOKEN) {
+      this.oauth1Token = parseTokenEnv<OAuth1Token>('GARMIN_OAUTH1_TOKEN', process.env.GARMIN_OAUTH1_TOKEN);
+    }
+    if (process.env.GARMIN_OAUTH2_TOKEN) {
+      this.oauth2Token = parseTokenEnv<OAuth2Token>('GARMIN_OAUTH2_TOKEN', process.env.GARMIN_OAUTH2_TOKEN);
+    }
+
     try {
       const oauth1Path = path.join(TOKEN_DIR, OAUTH1_TOKEN_FILE);
       const oauth2Path = path.join(TOKEN_DIR, OAUTH2_TOKEN_FILE);
       const profilePath = path.join(TOKEN_DIR, PROFILE_FILE);
 
-      if (fs.existsSync(oauth1Path)) {
+      if (!this.oauth1Token && fs.existsSync(oauth1Path)) {
         this.oauth1Token = JSON.parse(fs.readFileSync(oauth1Path, 'utf-8'));
       }
-      if (fs.existsSync(oauth2Path)) {
+      if (!this.oauth2Token && fs.existsSync(oauth2Path)) {
         this.oauth2Token = JSON.parse(fs.readFileSync(oauth2Path, 'utf-8'));
       }
       if (fs.existsSync(profilePath)) {
         this.profile = JSON.parse(fs.readFileSync(profilePath, 'utf-8'));
       }
     } catch {
-      this.oauth1Token = null;
-      this.oauth2Token = null;
       this.profile = null;
-    }
-
-    if (!this.oauth1Token && process.env.GARMIN_OAUTH1_TOKEN) {
-      this.oauth1Token = parseTokenEnv<OAuth1Token>('GARMIN_OAUTH1_TOKEN', process.env.GARMIN_OAUTH1_TOKEN);
-    }
-    if (!this.oauth2Token && process.env.GARMIN_OAUTH2_TOKEN) {
-      this.oauth2Token = parseTokenEnv<OAuth2Token>('GARMIN_OAUTH2_TOKEN', process.env.GARMIN_OAUTH2_TOKEN);
     }
   }
 
