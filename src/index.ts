@@ -2,6 +2,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { GarminClient } from './client';
 import { createGarminServer } from './server';
 import { startHttpServer } from './http';
+import { formatError } from './utils';
 
 async function runServer(): Promise<void> {
   const email = process.env.GARMIN_EMAIL;
@@ -43,6 +44,6 @@ async function main(): Promise<void> {
 }
 
 main().catch((error) => {
-  console.error('Fatal error starting server:', error);
+  console.error('Fatal error starting server:', formatError(error));
   process.exit(1);
 });

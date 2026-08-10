@@ -6,6 +6,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { formatError } from '../utils';
 
 const OAUTH_CONSUMER_URL = 'https://thegarth.s3.amazonaws.com/oauth_consumer.json';
 const SSO_EMBED = 'https://sso.garmin.com/sso/embed';
@@ -187,7 +188,7 @@ export class GarminAuth {
         this.isAuthenticated = true;
         return;
       } catch (error) {
-        console.error('OAuth2 refresh failed, will re-login:', error);
+        console.error('OAuth2 refresh failed, will re-login:', formatError(error));
       }
     }
 

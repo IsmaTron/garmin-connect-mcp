@@ -1,5 +1,6 @@
 import readline from 'node:readline';
 import { GarminAuth } from './client';
+import { formatError } from './utils';
 
 const rl = readline.createInterface({ input: process.stdin, output: process.stderr });
 
@@ -36,7 +37,7 @@ async function main(): Promise<void> {
     console.error('  GARMIN_OAUTH1_TOKEN = contents of ~/.garmin-mcp/oauth1_token.json');
     console.error('  GARMIN_OAUTH2_TOKEN = contents of ~/.garmin-mcp/oauth2_token.json');
   } catch (error) {
-    console.error('\nAuthentication failed:', error instanceof Error ? error.message : error);
+    console.error('\nAuthentication failed:', formatError(error));
     process.exit(1);
   } finally {
     rl.close();

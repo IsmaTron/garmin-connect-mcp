@@ -24,6 +24,9 @@ src/
     activities.dto.ts    Params de actividades
     devices.dto.ts       Params de dispositivos
     index.ts             Barrel
+  utils/
+    format-error.ts      Serializa errores sin filtrar cabeceras ni credenciales
+    index.ts             Barrel
   tools/
     activities.tools.ts  Tools de actividades (12)
     health.tools.ts      Tools de salud diaria (14)
@@ -144,6 +147,7 @@ Flujo basado en `python-garminconnect` (cyberjunky) via `garth`:
 - Imports locales sin extension (`.js` ni `.ts`)
 - Imports de librerias externas con su path completo (`@modelcontextprotocol/sdk/server/mcp.js`)
 - `console.error()` para logging (nunca `console.log` en servidores stdio)
+- Los errores se loguean con `formatError()`, nunca el objeto crudo: un error de axios arrastra `config.headers` y filtraria el token OAuth
 - Autenticacion via env vars `GARMIN_EMAIL` y `GARMIN_PASSWORD`
 - Tokens cacheados en `GARMIN_TOKEN_DIR` (default `~/.garmin-mcp/`), sembrables via `GARMIN_OAUTH1_TOKEN`/`GARMIN_OAUTH2_TOKEN`
 - Retry automatico con re-auth si un request falla con 401

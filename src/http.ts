@@ -3,6 +3,7 @@ import crypto from 'node:crypto';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { GarminClient } from './client';
 import { createGarminServer } from './server';
+import { formatError } from './utils';
 
 const MCP_PATH = '/mcp';
 const HEALTH_PATH = '/health';
@@ -45,15 +46,15 @@ async function handleMcpRequest(
   const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
 
   res.on('close', () => {
-    transport.close().catch((error) => console.error('Error closing transport:', error));
-    server.close().catch((error) => console.error('Error closing server:', error));
+    transport.close().catch((error) => console.error('Error closing transport:', formatError(error)));
+    server.close().catch((error) => console.error('Error closing server:', formatError(error)));
   });
 
   try {
     await server.connect(transport);
     await transport.handleRequest(req, res);
   } catch (error) {
-    console.error('Error handling MCP request:', error);
+    console.error('Error handling MCP request:', formatError(error));
     if (!res.headersSent) {
       sendJsonRpcError(res, 500, -32603, 'Internal server error');
     }
@@ -102,7 +103,7 @@ export function startHttpServer(client: GarminClient, port: number): void {
 
       await handleMcpRequest(req, res, client);
     } catch (error) {
-      console.error('Unhandled error in HTTP handler:', error);
+      console.error('Unhandled error in HTTP handler:', formatError(error));
       if (!res.headersSent) {
         sendJsonRpcError(res, 500, -32603, 'Internal server error');
       }
